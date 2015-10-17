@@ -24,9 +24,13 @@
 (defn capture-binding [tag b]
   (swap! bindings conj [tag b]))
 
+(defprotocol Element
+  (-elem [this]))
+
 (defn as-content [parent content]
   (doseq[c content]
     (let [child (cond
+                 	(satisfies? Element c) (-elem c)
                   (nil? c) nil
                   (map? c) (throw "Maps cannot be used as content")
                   (string? c) (gdom/createTextNode c)
@@ -54,7 +58,9 @@
 
 (defmethod dom-binding :style [_ [k b] elem]
   (bind/on-change b (fn [v]
-                      (dom-style elem k v))))
+                      (if k
+                        (dom-style elem k v)
+                        (dom-style elem v)))))
 
 (defn dom-add [bc parent elem v]
   (if-let [adder (bind/opt bc :add)]
@@ -87,7 +93,7 @@
      (map? v) (doseq [[k v] v]
                 (dom-style elem k v))
      (bind/binding? v) (do
-                         (capture-binding :attr [:style v])
+                         (capture-binding :style [nil v])
                          (dom-style elem (bind/value v))))
    elem)
   ([elem k v]
