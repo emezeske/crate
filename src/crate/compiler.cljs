@@ -2,7 +2,8 @@
   (:require [goog.dom :as gdom]
             [goog.style :as gstyle]
             [clojure.string :as string]
-            [crate.binding :as bind]))
+            [crate.binding :as bind]
+            [crate.util :as util]))
 
 (def xmlns {:xhtml "http://www.w3.org/1999/xhtml"
             :svg "http://www.w3.org/2000/svg"})
@@ -121,7 +122,9 @@
                  (capture-binding :attr [k v])
                  (bind/value v))
                v)]
-       (. elem (setAttribute (name k) v))))
+       ; Changed to use as-str for consistency with hiccup:
+       ; https://github.com/weavejester/hiccup/blob/master/src/hiccup/compiler.clj#L23
+       (. elem (setAttribute (name k) (util/as-str v)))))
    elem))
 
 ;; From Weavejester's Hiccup: https://github.com/weavejester/hiccup/blob/master/src/hiccup/core.clj#L57
